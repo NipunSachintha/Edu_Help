@@ -11,12 +11,13 @@ export async function GET(req) {
     
     return NextResponse.json(token);
 }
+
 // exprires in -> exprires_in_seconds
 //realtime -> streaming
 
 
-
-/*export async function GET() {
+/*
+export async function GET() {
   const response = await fetch("https://streaming.assemblyai.com/v3/token?expires_in_seconds=600", {
     method: "GET",
     headers: {
@@ -26,6 +27,7 @@ export async function GET(req) {
 
 
   const body = await response.json();
+  return body.token;
 
   const tokenOnly = { token: body.token };
 
