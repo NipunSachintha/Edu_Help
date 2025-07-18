@@ -7,7 +7,9 @@ import { CoachingExpert } from "@/services/Options";
 import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
-import { getToken } from "@/services/GlobalServices";
+import { AIModel, getToken } from "@/services/GlobalServices";
+import { Loader2Icon } from "lucide-react";
+import ChatBox from "./_components/ChatBox";
 
 let RecordRTC;
 
@@ -23,6 +25,15 @@ function DiscussionRoom() {
   const [transcribe, setTranscribe] = useState();
   const socket = useRef(null);
   let silenceTimeout;
+  const [conversation, setConversation] = useState([{
+      role: "assistant",
+      content: "Hello"
+    },
+    {
+      role: "user",
+      content: "Hello"
+    }]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -31,11 +42,13 @@ function DiscussionRoom() {
       );
       setExpert(Expert);
     }
+    console.log("[DiscussionRoomData]", DiscussionRoomData);  
   }, [DiscussionRoomData]);
 
   const connectToServer = async () => {
     console.log("[Step 1] Connect button clicked");
     setEnabled(true);
+    setLoading(true);
 
     try {
       if (typeof window !== "undefined" && typeof navigator !== "undefined") {
@@ -57,19 +70,40 @@ function DiscussionRoom() {
 
         socket.current.onopen = () => {
           console.log("[WebSocket] Connected to AssemblyAI");
+          setLoading(false);
         };
 
         socket.current.onerror = (error) => {
           console.error("[WebSocket] Error:", error);
         };
 
-        socket.current.onmessage = (message) => {
+        socket.current.onmessage = async (message) => {
           console.log("[WebSocket] Message received:", message);
           const data = JSON.parse(message.data);
-          if (data.text) {
+          /*if (data.text) {
             console.log("[Transcript]", data.text);
             setTranscribe(data.text);
+          }else if(data.transcript){
+            setTranscribe(data.transcript);
+          }*/
+          if (data.type === "Turn" && data.end_of_turn && data.transcript) {
+            const newUtterance = data.transcript;
+            setConversation((prev) => [...prev, { role: "user", content: newUtterance }]);
+            //console.log("[Final Transcript]", data.transcript);
+            //setTranscribe(data.transcript); 
+            setTranscribe(newUtterance);
+
+            const aiResp = await AIModel(
+              DiscussionRoomData.topic,
+              DiscussionRoomData.coachingOption,
+              newUtterance);
+            console.log("[AI Response]", aiResp);
+            setConversation(prev => [...prev,aiResp])
+
           }
+          
+
+
         };
 
         // Step 4: Request microphone access
@@ -118,6 +152,7 @@ function DiscussionRoom() {
 
   const disconnect = async (e) => {
     e.preventDefault();
+    setLoading(true);
     console.log("[Disconnect] Initiated");
 
     if (socket.current) {
@@ -135,6 +170,7 @@ function DiscussionRoom() {
     }
 
     setEnabled(false);
+    setLoading(false);
   };
 
   return (
@@ -163,9 +199,10 @@ function DiscussionRoom() {
 
           <div className="mt-5 flex items-center justify-center">
             {!enabled ? (
-              <Button onClick={connectToServer}>Connect</Button>
+              <Button onClick={connectToServer} disabled={loading}>{loading && <Loader2Icon className="animate-spin" />}Connect</Button>
             ) : (
               <Button variant="destructive" onClick={disconnect}>
+                {loading && <Loader2Icon className="animate-spin" />}
                 Disconnect
               </Button>
             )}
@@ -173,19 +210,27 @@ function DiscussionRoom() {
         </div>
 
         <div>
-          <div className="h-[60vh] bg-secondary rounded-4xl flex flex-col items-center justify-center relative">
-            <h2>Chat</h2>
-          </div>
-          <h2 className="mt-4 text-gray-400 text-smaller">
-            At the end of the conversation, we will automatically generate
-            feedback/notes
-          </h2>
+          <ChatBox conversation={conversation}/>
         </div>
       </div>
 
       <div>
         <h2>{transcribe}</h2>
       </div>
+      <h3 className="text-md font-semibold text-gray-700">Conversation</h3>
+      <div className="space-y-2">
+      {conversation.map((utterance, index) => (
+        <p key={index} className="text-gray-800">
+          <span className="font-bold">
+            {utterance.role === "assistant" ? "🤖 AI:" : "🧑 Me:"}
+          </span>{" "}
+          {utterance.content}
+        </p>
+      ))}
+      </div>
+
+
+
     </div>
   );
 }
