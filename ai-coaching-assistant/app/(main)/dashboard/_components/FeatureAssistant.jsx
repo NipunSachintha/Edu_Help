@@ -6,6 +6,7 @@ import Image from 'next/image';
 import React from 'react'
 import { BlurFade } from '@/components/magicui/blur-fade';
 import UserInputDialog from './UserInputDialog';
+import ProfileDialog from './ProfileDialog';
 
 function FeatureAssistant() {
     const user = useUser() ;
@@ -16,7 +17,9 @@ function FeatureAssistant() {
                     <h2 className='font-medium text-grey-500'>My Workspace</h2>
                     <h2 className='text-3xl font-bold'>Welcome back, {user ?. displayName}</h2>
                 </div>
-                <Button>Profile</Button>
+                <ProfileDialog>
+                    <Button>Profile</Button>
+                </ProfileDialog>
                 
             </div>
 

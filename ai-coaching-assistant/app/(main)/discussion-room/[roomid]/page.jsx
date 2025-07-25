@@ -1,15 +1,17 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { CoachingExpert } from "@/services/Options";
 import Image from "next/image";
 import { UserButton } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
-import { AIModel, getToken } from "@/services/GlobalServices";
+import { AIModel, getToken, ConvertTextToSpeech } from "@/services/GlobalServices";
 import { Loader2Icon } from "lucide-react";
 import ChatBox from "./_components/ChatBox";
+import { UserContext } from '@/app/_context/UserContext';
+import Webcam from "react-webcam";
 
 let RecordRTC;
 
@@ -19,21 +21,97 @@ function DiscussionRoom() {
     id: roomid,
   });
 
+  const [audioUrl, setAudioUrl] = useState(null);
   const [expert, setExpert] = useState();
   const [enabled, setEnabled] = useState(false);
   const recorder = useRef(null);
   const [transcribe, setTranscribe] = useState();
   const socket = useRef(null);
+  const updateConversation = useMutation(api.DiscussionRoom.UpdateConversation);
+  const updateUserToken = useMutation(api.users.UpdateUserToken);
+  const [enableFeedbackNotes, setEnableFeedbackNotes] = useState(false);
+  const {userData,setUserdata}=useContext(UserContext);
+
+  
   let silenceTimeout;
   const [conversation, setConversation] = useState([{
-      role: "assistant",
-      content: "Hello"
-    },
-    {
-      role: "user",
-      content: "Hello"
-    }]);
+    role: "assistant",
+    content: "Hello"
+  },
+  {
+    role: "user",
+    content: "Hello"
+  }]);
   const [loading, setLoading] = useState(false);
+
+  // --- AI Rate Limiting and Batching ---
+  const aiRequestQueue = useRef([]); // Queue for pending user utterances
+  const aiRequestsThisMinute = useRef(0); // Counter for requests sent in the current minute
+  const aiTimer = useRef(null); // Timer for resetting the counter
+  const isProcessingQueue = useRef(false); // Prevent concurrent queue processing
+
+  // Helper to process the queue respecting the rate limit
+  const processAIQueue = async () => {
+    if (isProcessingQueue.current) return;
+    isProcessingQueue.current = true;
+    try {
+      while (aiRequestsThisMinute.current < 4 && aiRequestQueue.current.length > 0) {
+        let toSend = [];
+        // If more than 4 in queue, batch them
+        if (aiRequestQueue.current.length > 4) {
+          // Take all and batch as one
+          toSend = aiRequestQueue.current.splice(0, aiRequestQueue.current.length);
+        } else {
+          // Take one
+          toSend = [aiRequestQueue.current.shift()];
+        }
+        // Prepare input for AIModel
+        let userInput;
+        if (toSend.length === 1) {
+          userInput = toSend[0].utterance;
+        } else {
+          // Batch: join with separator or as array (customize as needed)
+          userInput = toSend.map(item => item.utterance).join("\n---\n");
+        }
+        // Call AIModel
+        setLoading(true);
+        const aiResp = await AIModel(
+          DiscussionRoomData.topic,
+          DiscussionRoomData.coachingOption,
+          userInput
+        );
+        setLoading(false);
+
+        // Convert AI response to speech
+        const url = await ConvertTextToSpeech(aiResp.content, DiscussionRoomData.expertName);
+        setAudioUrl(url);
+        // For each user input in the batch, add their utterance to conversation
+        setConversation(prev => [
+          ...prev,
+          ...toSend.map(item => ({ role: "user", content: item.utterance })),
+          aiResp
+        ]);
+        aiRequestsThisMinute.current++;
+      }
+    } finally {
+      isProcessingQueue.current = false;
+    }
+  };
+
+  // Timer to reset the request counter every minute and process the queue
+  useEffect(() => {
+    aiTimer.current = setInterval(() => {
+      aiRequestsThisMinute.current = 0;
+      processAIQueue();
+    }, 60 * 1000);
+    return () => clearInterval(aiTimer.current);
+  }, []);
+
+  // When a new utterance is received, push to queue and process
+  const handleUserUtterance = (utterance) => {
+    aiRequestQueue.current.push({ utterance });
+    processAIQueue();
+  };
 
   useEffect(() => {
     if (DiscussionRoomData) {
@@ -42,7 +120,7 @@ function DiscussionRoom() {
       );
       setExpert(Expert);
     }
-    console.log("[DiscussionRoomData]", DiscussionRoomData);  
+    console.log("[DiscussionRoomData]", DiscussionRoomData);
   }, [DiscussionRoomData]);
 
   const connectToServer = async () => {
@@ -88,20 +166,11 @@ function DiscussionRoom() {
           }*/
           if (data.type === "Turn" && data.end_of_turn && data.transcript) {
             const newUtterance = data.transcript;
-            setConversation((prev) => [...prev, { role: "user", content: newUtterance }]);
-            //console.log("[Final Transcript]", data.transcript);
-            //setTranscribe(data.transcript); 
             setTranscribe(newUtterance);
-
-            const aiResp = await AIModel(
-              DiscussionRoomData.topic,
-              DiscussionRoomData.coachingOption,
-              newUtterance);
-            console.log("[AI Response]", aiResp);
-            setConversation(prev => [...prev,aiResp])
-
+            // Instead of calling AIModel directly, queue the request
+            handleUserUtterance(newUtterance);
           }
-          
+
 
 
         };
@@ -169,9 +238,31 @@ function DiscussionRoom() {
       console.warn("[Disconnect] Recorder is already null or not initialized");
     }
 
+    await updateConversation({
+      id: DiscussionRoomData._id,
+      conversation: conversation
+    });
+
+    
+
     setEnabled(false);
     setLoading(false);
+    setEnableFeedbackNotes(true);
   };
+
+
+  const updateUserCredits = async(text)=>{
+    const tokencount = text.trim()?text.trim().split(/\s+/).length:0;
+    const result = await updateUserToken({
+      id: userData._id,
+      credits: Number(userData.credits) - Number(tokencount)
+    });
+
+    setUserdata(prev=>({
+      ...prev,
+      credits: Number(userData.credits) - Number(tokencount)
+    }))
+  }
 
   return (
     <div className="-mt-12">
@@ -192,9 +283,19 @@ function DiscussionRoom() {
               />
             )}
             <h2 className="text-gray-500">{expert?.name}</h2>
+
+            <audio src={audioUrl} type="audio/mp3" autoPlay />
+
+
+
             <div className="p-5 bg-gray-200 px-10 rounded-lg absolute bottom-10 right-10">
               <UserButton />
             </div>
+
+
+            {/*<div className="absolute bottom-10 right-10">
+              <Webcam height={80} width={130} className="rounded-2xl"/>
+            </div>*/}
           </div>
 
           <div className="mt-5 flex items-center justify-center">
@@ -210,7 +311,9 @@ function DiscussionRoom() {
         </div>
 
         <div>
-          <ChatBox conversation={conversation}/>
+          <ChatBox conversation={conversation}  
+          enableFeedbackNotes={enableFeedbackNotes}
+          coachingOption={DiscussionRoomData?.coachingOption}/>
         </div>
       </div>
 
@@ -219,14 +322,14 @@ function DiscussionRoom() {
       </div>
       <h3 className="text-md font-semibold text-gray-700">Conversation</h3>
       <div className="space-y-2">
-      {conversation.map((utterance, index) => (
-        <p key={index} className="text-gray-800">
-          <span className="font-bold">
-            {utterance.role === "assistant" ? "🤖 AI:" : "🧑 Me:"}
-          </span>{" "}
-          {utterance.content}
-        </p>
-      ))}
+        {conversation.map((utterance, index) => (
+          <p key={index} className="text-gray-800">
+            <span className="font-bold">
+              {utterance.role === "assistant" ? "🤖 AI:" : "🧑 Me:"}
+            </span>{" "}
+            {utterance.content}
+          </p>
+        ))}
       </div>
 
 

@@ -1,6 +1,36 @@
-import React from "react";
+import { Button } from "@/components/ui/button";
+import { AIModelToGenerateFeedbackAndNotes } from "@/services/GlobalServices";
+import { useMutation } from "convex/react";
+import { LoaderCircle } from "lucide-react";
+import {React,useState} from "react";
+import { toast } from "sonner";
+import { api } from '@/convex/_generated/api';
+import { useParams } from "next/navigation";
 
-const ChatBox = ({conversation}) => {
+
+const ChatBox = ({conversation, enableFeedbackNotes,coachingOption}) => {
+
+    const [loading,setLoading] = useState(false);
+    const updateSummary = useMutation(api.DiscussionRoom.UpdateSummary);
+    const {roomid} = useParams();
+    const GenerateFeedbackNotes = async() => {
+        try{
+        setLoading(true);
+        const result = await AIModelToGenerateFeedbackAndNotes(coachingOption,conversation);
+        console.log(result.content);
+        setLoading(false);
+        await updateSummary({
+            id:roomid,
+            summary:result.content
+        })
+        toast('Feedback/Notes Generated Successfully')
+    }catch(error){
+        console.log(error);
+        setLoading(false);
+        toast('Error Generating Feedback/Notes')
+    }
+        
+    }
     
 
     return (
@@ -18,10 +48,13 @@ const ChatBox = ({conversation}) => {
                 ))}
             
           </div>
-          <h2 className="mt-4 text-gray-400 text-smaller">
-            At the end of the conversation, we will automatically generate
-            feedback/notes
+          {!enableFeedbackNotes? <h2 className="mt-4 text-gray-400 text-smaller">
+            
+            
           </h2>
+          :<Button onClick ={GenerateFeedbackNotes} disabled={loading} className='mt-7 w-full'>
+            {loading&&<LoaderCircle className="animate-spin"/>}
+            Generate Feedback/Notes</Button>}
           </div>
     );
 };
