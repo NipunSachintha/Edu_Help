@@ -1,4 +1,4 @@
-import React, { use, useState } from 'react';
+import React, { use, useContext, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { DialogClose } from '@radix-ui/react-dialog';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useRouter } from 'next/navigation';
+import { UserContext } from '@/app/_context/UserContext';
 
 function UserInputDialog({children, ExpertsList}) {
 
@@ -25,13 +26,16 @@ function UserInputDialog({children, ExpertsList}) {
     const [loading, setLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const router = useRouter();
+    const {userData} = useContext(UserContext);
+    
 
     const OnClickNext=async()=>{
         setLoading(true);
         const result = await createDiscussionRoom({
             topic: userTopic,
             coachingOption: ExpertsList?.name,
-            expertName: selectedExpert
+            expertName: selectedExpert,
+            uid: userData?._id
         });
         console.log(result);
         setLoading(false);

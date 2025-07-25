@@ -3,6 +3,7 @@ import { StackProvider, StackTheme } from "@stackframe/stack";
 import Provider from "./provider";
 import { stackServerApp } from "../stack";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 
 const geistSans = Geist({
@@ -26,7 +27,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       ><StackProvider app={stackServerApp}><StackTheme>
-        <Provider>{children}</Provider>
+        <Provider>{children}
+          <Toaster/>
+        </Provider>
         
       </StackTheme></StackProvider></body>
     </html>
