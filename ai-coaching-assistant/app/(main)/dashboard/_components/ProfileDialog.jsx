@@ -17,8 +17,9 @@ function ProfileDialog({children}) {
             <DialogHeader>
             <DialogTitle>  </DialogTitle>
             <DialogDescription>
-                <Credits/>
+               
             </DialogDescription>
+            <Credits/>
             </DialogHeader>
         </DialogContent>
     </Dialog>

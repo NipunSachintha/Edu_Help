@@ -12,18 +12,8 @@ function FeatureAssistant() {
     const user = useUser() ;
     return (
         <div>
-            <div className='flex justify-between items-center'>
-                <div>
-                    <h2 className='font-medium text-grey-500'>My Workspace</h2>
-                    <h2 className='text-3xl font-bold'>Welcome back, {user ?. displayName}</h2>
-                </div>
-                <ProfileDialog>
-                    <Button>Profile</Button>
-                </ProfileDialog>
-                
-            </div>
 
-            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-10 mt-4'>
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-10 -mt-10'>
                 {ExpertsList.map((option, index) => (
                     <BlurFade key={option.icon} delay={0.25 + index * 0.05} inView>
                          <div key = {index} className='p-3 bg-secondary rounded-3xl flex flex-col items-center justify-center gap-10 hover:bg-secondary/80 transition-all cursor-pointer mt-10'>
