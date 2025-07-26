@@ -1,36 +1,212 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# EduHelper - AI-Powered Learning Assistant
 
-## Getting Started
+EduHelper is a comprehensive AI-powered learning platform that provides personalized coaching through voice interactions. Built with Next.js, Convex, and OpenAI, it offers multiple learning modes to enhance your educational experience.
 
-First, run the development server:
+## 🚀 Features
 
+### AI Coaching Modes
+- **Topic-Based Lectures**: Structured learning sessions with AI-powered voice assistance
+- **Mock Interviews**: Practice real interview scenarios with intelligent feedback
+- **Q&A Preparation**: Interactive question-answer sessions for better understanding
+- **Language Learning**: Master new languages with pronunciation guidance
+- **Meditation Guide**: Peaceful AI voice guidance for mindfulness practices
+
+### Key Features
+- 🎤 **Voice Interaction**: Real-time voice conversations with AI coaches
+- 🧠 **Multiple AI Personalities**: Choose from different AI coaches (Joanna, Salli, Joey)
+- 📊 **Progress Tracking**: Monitor your learning history and feedback
+- 💳 **Credit System**: Manage your usage with a credit-based system
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- 🔒 **User Authentication**: Secure user management with Stack authentication
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS
+- **Backend**: Convex (Database & Backend-as-a-Service)
+- **AI**: OpenAI GPT, AWS Polly (Text-to-Speech)
+- **Authentication**: Stack
+- **Audio**: AssemblyAI, RecordRTC
+- **UI Components**: Radix UI, Lucide React Icons
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [Docker](https://www.docker.com/) (for local Convex development)
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone <your-repository-url>
+cd ai-coaching-assistant
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Environment Setup
+
+Create a `.env.local` file in the root directory and add the following environment variables:
+
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Convex Configuration
+NEXT_PUBLIC_CONVEX_URL=your_convex_url_here
+
+# AWS Configuration (for text-to-speech)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=your_aws_region
+
+# AssemblyAI (for speech-to-text)
+ASSEMBLYAI_API_KEY=your_assemblyai_api_key
+
+# Stack Authentication
+NEXT_PUBLIC_STACK_PUBLIC_KEY=your_stack_public_key
+STACK_SECRET_KEY=your_stack_secret_key
+```
+
+### 4. Set Up Convex (Backend)
+
+#### Option A: Using Convex Cloud (Recommended)
+1. Sign up at [convex.dev](https://convex.dev)
+2. Create a new project
+3. Copy your deployment URL to `NEXT_PUBLIC_CONVEX_URL`
+
+#### Option B: Local Development with Docker
+```bash
+# Start Convex backend locally
+docker-compose up -d
+```
+
+### 5. Run the Development Server
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+ai-coaching-assistant/
+├── app/                    # Next.js app directory
+│   ├── (main)/            # Main application routes
+│   │   ├── dashboard/     # Dashboard page and components
+│   │   ├── discussion-room/ # AI conversation interface
+│   │   └── view-summary/  # Conversation summaries
+│   ├── api/               # API routes
+│   └── _context/          # React context providers
+├── components/            # Reusable UI components
+├── convex/               # Convex backend functions and schema
+├── services/             # Business logic and configurations
+└── public/               # Static assets
+```
 
-## Learn More
+## 🎯 Usage Guide
 
-To learn more about Next.js, take a look at the following resources:
+### Getting Started
+1. **Sign Up/Login**: Use the authentication system to create an account
+2. **Access Dashboard**: Navigate to the dashboard to see all available features
+3. **Choose a Mode**: Select from the 5 different AI coaching modes
+4. **Start Learning**: Begin your personalized AI coaching session
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### AI Coaching Modes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Topic-Based Lectures
+- Perfect for structured learning on any subject
+- AI delivers engaging lectures with follow-up questions
+- Receive comprehensive notes after each session
 
-## Deploy on Vercel
+#### Mock Interviews
+- Practice real interview scenarios
+- Get constructive feedback on your responses
+- Improve your interview skills with AI guidance
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Q&A Preparation
+- Interactive question-answer sessions
+- Critical thinking development
+- Personalized feedback on your understanding
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Language Learning
+- Pronunciation guidance and vocabulary tips
+- Interactive language exercises
+- Progress tracking for language acquisition
+
+#### Meditation Guide
+- Peaceful AI voice guidance
+- Breathing techniques and mindfulness practices
+- Relaxing meditation sessions
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+
+# Convex (if using local development)
+npx convex dev       # Start Convex development server
+```
+
+### Adding New Features
+
+1. **New AI Coaching Mode**: Add to `services/Options.jsx`
+2. **UI Components**: Create in `components/ui/`
+3. **Backend Logic**: Add to `convex/` directory
+4. **API Routes**: Create in `app/api/`
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Set up environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+### Other Platforms
+The application can be deployed to any platform that supports Next.js:
+- Netlify
+- Railway
+- DigitalOcean App Platform
+- AWS Amplify
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+1. Check the [Issues](https://github.com/your-repo/issues) page
+2. Create a new issue with detailed information
+3. Contact the development team
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) for the amazing React framework
+- [Convex](https://convex.dev/) for the backend infrastructure
+- [OpenAI](https://openai.com/) for AI capabilities
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Stack](https://stack-auth.com/) for authentication
