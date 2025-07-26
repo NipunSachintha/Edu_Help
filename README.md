@@ -13,9 +13,7 @@ EduHelper is a comprehensive AI-powered learning platform that provides personal
 
 ### Key Features
 - 🎤 **Voice Interaction**: Real-time voice conversations with AI coaches
-- 🧠 **Multiple AI Personalities**: Choose from different AI coaches (Joanna, Salli, Joey)
-- 📊 **Progress Tracking**: Monitor your learning history and feedback
-- 💳 **Credit System**: Manage your usage with a credit-based system
+- 🧠 **Multiple AI Personalities**: Choose from different AI coaches
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 🔒 **User Authentication**: Secure user management with Stack authentication
 
@@ -170,19 +168,6 @@ npx convex dev       # Start Convex development server
 3. **Backend Logic**: Add to `convex/` directory
 4. **API Routes**: Create in `app/api/`
 
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Set up environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Other Platforms
-The application can be deployed to any platform that supports Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
 
 ## 🤝 Contributing
 
@@ -192,21 +177,3 @@ The application can be deployed to any platform that supports Next.js:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/your-repo/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/) for the amazing React framework
-- [Convex](https://convex.dev/) for the backend infrastructure
-- [OpenAI](https://openai.com/) for AI capabilities
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Stack](https://stack-auth.com/) for authentication
